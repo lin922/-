@@ -1556,7 +1556,7 @@ java集合分为Collection和Map两种体系
 Collection coll = new ArrayList();
 Iterator iterator = coll.iterator();
 while(iterator.hasNext()){
-    System.out.println(iterator.next());
+  System.out.println(iterator.next());
 }
 ```
 
@@ -1654,16 +1654,362 @@ TreeSet 中添加的数据，必须是相同的类对象
 
 ​				/----Properties
 
+- Map结构的理解：
+
+![image-20220513144431434](.assets/image-20220513144431434.png)
+
+map中的key：无序的、不可重复的，使用Set存储所有的Key
+
+map中的value：无序的，可重复的，使用collection存储所有value
+
+一个键值对：key-value构成了一个Entry对象
+
+Map中的entry:无序的，不可重复的，使用Set存储所有的entry 
+
+- HashMap的底层实现原理
+
+HashMap map = new HashMap();
+
+在实例化以后，底层创建了长度为16的一维数组Entry[] table
+
+调用key1所在类的hashCode()计算key1哈希值，此哈希值经过某种算法计算以后，得到在Entry数组中的存放位置。如果此位置空，则添加成功。如果不为空，比较哈希值，哈希值都不相同就添加成功，若有相同，继续比较：调用key1所在类的equals()方法，返回false添加成功，返回true：使用value1替换相同key的value值。多个数据链表方式存储
+
+ jdk8的不同：
+
+new HashMap()没有创建长度16的数组
+
+jdk8底层的数据是Node[]不是Entry[]
+
+首次调用put时才创建长度16的数组
+
+jdk7底层结构：数组+链表 jdk8：数组+链表+红黑树
+
+当数组某个索引位置上的元素以链表形式存在的数据个数>8且当前数组的长度>64时，此时此索引位置上所有数据改为使用红黑树存储。
+
+- LinkedHashMap的底层实现原理：与HashMap相同，继承于HashMap。区别在于其内部提供了Entry，替换HashMap的Node
+
+- Map常用方法
+
+添加：put(Object key, Object value);
+
+删除：remove(Object key);
+
+修改：put(Object key, Object value);
+
+查询：get(Object key);
+
+长度：size()
+
+遍历：keySet() / values() /entrySet()
+
+![image-20220513112457080](.assets/image-20220513112457080.png)
+
+- 遍历
+
+```java
+//遍历所有的key集：keyset()
+Set set = map.ketSet();
+Iterator iterator = set.iterator();
+while(iterator.hasNext()) {
+    System.out.println(obj);
+}
+//遍历所有的value集：values()
+Collection values = map.values();
+for(Object obj : values) {
+    System.out.println(obj);
+}
+//遍历所有的key-value
+//entrySet()
+Set entrySet = map.entrySet();
+Iterator iterator1 = entrySet.iterator();
+while(iterator1.hasNext()) {
+    Object obj = iterator1.next();
+    Map.Entry entry = (Map.Entry) obj;
+    System.out.println(entry.getKey() + entry.getValue());
+}
+```
+
+- TreeMap
+
+key必须是同一个类的对象，要用key排序
+
+（1）自然排序  557节
+
+（2）定制排序
+
+- Properties
+
+是Hashtable的子类，用于处理配置文件。key和value都是字符串类型。
+
+- 负载因子对HashMap的影响？
+
+  决定HashMap的数据密度，密度越大，发生碰撞几率越高。
+
 ##### 11.7 Collections工具类
+
+操作Collection(Set List) Map的工具类
+
+![image-20220513145344044](.assets/image-20220513145344044.png)
+
+![image-20220513115026325](.assets/image-20220513115026325.png)
 
 #### 12、泛型
 
-#### 13、IO流
+##### 12.1 为什么要有泛型
+
+泛型：标签
+
+Collection<E>  List<E>  <E>就是泛型
+
+1、解决元素存储的安全性问题，比如商品和药品的标签不会弄错
+
+2、解决获取元素时，需要类型强制转换的问题，不用每次辨别商品药品
+
+##### 12.2 在集合中使用泛型
+
+以HashMap为例
+
+```java
+Map<String,Integer> map = new HashMap<>();
+//泛型的嵌套
+Set<Map.Entry<String, Integer>> entry = map.entrySet();
+Iterator<Map.Entry<String, Integer>> iterator = entry.iterator();
+while(iterator.hasNext()) {
+   
+}
+```
+
+①集合接口或集合类在jdk5.0时都修改为带泛型的结构
+
+②在实例化集合类时，可以指明具体的泛型类型
+
+③指明完以后，在集合类或接口中凡是定义类和接口时，内部结构（方法、构造器、属性）使用到类的泛型的位置，都指定为实例化的泛型类型。
+
+比如：add(E e)  ---->   实例化以后：add(Integer e)
+
+④注意泛型的类型必须是类，不能是基本数据类型。如果是基本数据类型，要用包装类。
+
+⑤如果实例化时，没有指明泛型的类型，默认类型为java.lang.Object类。
+
+```java
+//指明泛型的写法
+public int compareTo(Employee o) {
+    return this.name.compareTo(o.name);
+}
+//没有指明泛型的写法
+public int compareTo(Object o) {
+    if(o instanceof Empolyee) {
+        Employee e = (Employee)o;
+        return this.name.compareTo(e.name);
+    }
+    return 0;
+    throw new RunTimeException("传入的数据类型不一致！");
+}
+```
+
+##### 12.3 自定义泛型结构
+
+泛型类 泛型接口 泛型方法
+
+1、关于自定义泛型类，泛型接口：
+
+由于子类在继承带泛型的父类时，指明了泛型类型。则实例化子类对象时，不需要再指明泛型。
+
+```java
+//自定义泛型类
+public class Order<T> {
+    String orderName;
+    int orderId;
+    //类的内部结构就可以使用类的泛型
+    T orderT;
+    public Order(){};
+    public Order(String orderName, int orderId, T orderT) {
+        this.orderName = orderName;
+        this.orderId = orderId;
+        this.orderT = orderT;
+    }
+    public T getOrderT(){
+        return orderT;
+    }
+}
+```
+
+2、泛型方法
+
+在方法中出现了泛型的结构，泛型参数与类的泛型参数没有任何关系。
+
+##### 12.4 泛型在继承上的体现
+
+```java
+//1.泛型在继承方面的体现
+//类A是类B的父类，G<A>和G<B>不具备子父类关系，二者是并列的。
+//类A是类B的父类，A<G>是B<G>父类
+public void test1(){
+	Object obj = nu1l;父类
+	String str = nul1;子类
+	obj = str;
+	object[] arrl = null;
+	String[] arr2 = nu1l;
+	arr1 = arr2;
+    List<Object> list1 = null;
+    List<String> list2 = null;
+    list1 = list2; //错误
+```
+
+##### 12.5 通配符的使用
+
+类A是类B的父类，G<A>和G<B>不具备子父类关系，二者是并列的。二者共同的父类是G<?>
+
+List<?> 不能往里添加数据，除了添加null
+
+##### 12.6 泛型应用举例
+
+练习：
+
+![image-20220513200930291](.assets/image-20220513200930291.png)
+
+```java
+public class DAO<T> {
+    private Map<String, T> map;
+
+    //保存T类型的对象到Map成员变量
+    public void save(String id, T entity) {
+        map.put(id, entity);
+    }
+    //从Map中获取id的对象
+    public T get(String id) {
+        map.get(id);
+    }
+    //替换map的key为id的内容，改为entity对象
+    public void update(String id, T entity) {
+        if (map.containsKey(id)) {
+            map.put(id, entity);
+        }
+    }
+    //返回map中存放的所以T对象
+    public List<T> list() {
+        ArrayList<T> list = new ArrayList<>();
+        Collection<T> values = map.values();
+        for (T t : values) {
+            list.add(t);
+        }
+    }
+    //删除指定id对象
+    public void delete(String id) {
+        map.remove(id);
+    }
+}
+
+public class User {
+    private int id;
+    private int age;
+    private String name;
+	//构造器
+    public User(int id, int age, String name) {
+        this.id = id;
+        this.age = age;
+        this.name = name;
+    }
+    public User() {
+
+    }
+    //get set方法
+    public int getId() {
+        return id;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+	
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+  	//ToString方法
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", age=" + age +
+                ", name='" + name + '\'' +
+                '}';
+    }
+	//重写equals和hashcode方法
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (id != user.id) return false;
+        if (age != user.age) return false;
+        return name != null ? name.equals(user.name) : user.name == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + age;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
+}
+//测试方法
+public class DAOTest{
+    public static void main(String[] args) {
+        DAO<User> dao = new DAO<User>();
+        dao.方法();
+    }
+}
+```
+
+#### 13、IO流 575
+
+##### 13.1 File类的使用
+
+##### 13.2 IO流原理及流的分类
+
+##### 13.3 节点流
+
+##### 13.4 缓冲流
+
+##### 13.5 转换流
+
+##### 13.6 标准输入、输出流
+
+##### 13.7  打印流
+
+##### 13.8 数据流
+
+##### 13.9 对象流
+
+##### 13.10 随机存取文件流
 
 #### 14、网络编程
 
+
+
 #### 15、Java反射机制
+
+
 
 #### 16、Java8其他新特性
 
+
+
 #### 17、Java9&10&11新特性
+
